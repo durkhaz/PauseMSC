@@ -21,7 +21,7 @@ std::wstring btnStrs[] = { L"Pause Game" , L"Resume Game" };
 
 BOOL CALLBACK DlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 bool suspendProcess(DWORD targetP, bool suspend, HWND hwnd);
-DWORD retPid(std::wstring targetpn);
+DWORD findPid(const std::wstring &str);
 void logAdd(const std::wstring &str, HWND hwnd);
 
 
@@ -57,7 +57,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 			{
 				case IDC_TOGGLEPAUSE:
 				{
-					DWORD tpid = retPid(prcStr);
+					DWORD tpid = findPid(prcStr);
 					bool bRet = (paused ? suspendProcess(tpid, false, hwnd) : suspendProcess(tpid, true , hwnd));
 					if (bRet)
 					{
@@ -71,7 +71,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 		case WM_CLOSE:
 			if (paused)
 			{
-				DWORD tpid = retPid(prcStr);
+				DWORD tpid = findPid(prcStr);
 				suspendProcess(tpid, false, hwnd);
 			}
 			EndDialog(hwnd, 0);
@@ -82,7 +82,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 	return TRUE;
 }
 
-DWORD retPid(std::wstring targetpn)
+DWORD findPid(const std::wstring &str)
 {
 	HANDLE ProcessHandle;
 	PROCESSENTRY32 pEntry32;
@@ -90,7 +90,7 @@ DWORD retPid(std::wstring targetpn)
 	ProcessHandle = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 	do
 	{
-		if (!wcscmp(pEntry32.szExeFile, targetpn.c_str()))
+		if (!wcscmp(pEntry32.szExeFile, str.c_str()))
 		{
 			CloseHandle(ProcessHandle);
 			return pEntry32.th32ProcessID;
